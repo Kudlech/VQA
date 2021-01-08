@@ -1,0 +1,33 @@
+defaults:
+  - hydra/job_logging: disabled
+  - hydra/output_subdir: null
+hydra:
+  output_subdir: null
+  run:
+    dir: logs/hydra
+main:
+  experiment_name_prefix: my_exp
+  seed: 1
+  num_workers: 8
+  parallel: False
+  gpus_to_use: '0'
+  trains: False
+  paths:
+    train: 'data/cache/train_target.pkl'
+    validation: 'data/cache/val_target.pkl'
+    logs: 'logs/'
+train:
+  num_epochs: 18
+  grad_clip: 0.2
+  dropout: 0.2
+  num_hid: 20
+  last_hidden_fc_dim: 3500
+  question_output_dim: 100
+  word_embedding_dim: 50
+  batch_size: 128
+  save_model: True
+  lr:
+    lr_value: 1e-3
+    lr_decay: 15
+    lr_gamma: 0.1
+    lr_step_size: 30
