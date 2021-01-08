@@ -83,7 +83,7 @@ def train(model: nn.Module, train_loader: DataLoader, eval_loader: DataLoader, t
             batch_score = train_utils.compute_soft_accuracy(y_hat_probs, label)
             metrics['train_score'] += batch_score.item()
 
-            metrics['train_loss'] += loss.item() * label.size(0)
+            metrics['train_loss'] += loss.item()
 
             # Report model to tensorboard
             if epoch == 0 and i == 0:
