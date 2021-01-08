@@ -37,9 +37,9 @@ def main(cfg: DictConfig) -> None:
     train_dataset = VQADataset(path_answers=cfg['main']['paths']['train'],
                                path_image=path_image_train, path_questions=path_question_train)
     path_image_val = '/datashare/val2014/COCO_val2014_'
-    path_question_train = '/datashare/v2_OpenEnded_mscoco_val2014_questions.json'
+    path_question_val = '/datashare/v2_OpenEnded_mscoco_val2014_questions.json'
     val_dataset = VQADataset(path_answers=cfg['main']['paths']['validation'], path_image=path_image_val,
-                             path_questions=path_question_train, word_dict=train_dataset.word_dict)
+                             path_questions=path_question_val, word_dict=train_dataset.word_dict)
 
     train_loader = DataLoader(train_dataset, cfg['train']['batch_size'], shuffle=True,
                               num_workers=cfg['main']['num_workers'])
@@ -52,7 +52,7 @@ def main(cfg: DictConfig) -> None:
     # batch_size, word_vocab_size, lstm_hidden = 256, output_dim = 2403, dropout = 0.2,
     # word_embedding_dim = 100, question_output_dim = 100, image_dim = 224 * 224, image_out_dim = 512):
     image_dim = train_dataset.pic_size
-    output_dim =2410 # TODO : Check labels dim
+    output_dim =2410
     model = MyModel(batch_size=cfg['train']['batch_size'], word_vocab_size=train_dataset.vocab_size,
                     lstm_hidden=cfg['train']['num_hid'], output_dim=output_dim, dropout=cfg['train']['dropout'],
                     word_embedding_dim=cfg['train']['word_embedding_dim'], question_output_dim = cfg['train']['question_output_dim'],
@@ -78,5 +78,4 @@ def main(cfg: DictConfig) -> None:
 
 
 if __name__ == '__main__':
-    print(sys.stderr.isatty())
     main()
