@@ -21,14 +21,17 @@ MAX_QUESTION_LEN = 20
 
 class VQADataset(Dataset):
 	"""
-	Custom dataset template. Implement the empty functions.
+	VQA dataset
 	"""
 	def __init__(self, path_answers: PathT, path_image: PathT, path_questions: PathT, word_dict=None) -> None:
 		# Set variables
-		self.is_val = False if word_dict is None else True
 		self.path_answers = path_answers
 		self.path_image = path_image
 		self.path_questions = path_questions
+
+		# if word_dict is already built, it's val dataset
+		self.is_val = False if word_dict is None else True
+
 		# Load Q&A
 		self.questionsAnswers = self._get_questions_answers()
 
@@ -48,6 +51,10 @@ class VQADataset(Dataset):
 		self.entries = self._get_entries()
 
 	def __getitem__(self, index: int) -> Tuple:
+		"""
+		:param index:
+		:return: item's image, question, question len, labels
+		"""
 		path = self.path_image +str(self.entries[index]['image_id']).zfill(12)+'.jpg'
 		image = self._get_images(path)
 		return image, self.entries[index]['question'],self.entries[index]['question_len'], self.entries[index]['labels'].to_dense()
@@ -61,8 +68,7 @@ class VQADataset(Dataset):
 
 	def _get_questions_answers(self) -> Any:
 		"""
-		Load all features into a structure (not necessarily dictionary). Think if you need/can load all the features
-		into the memory.
+		Load all features into a structure
 		:return:
 		:rtype:
 		"""
@@ -81,7 +87,7 @@ class VQADataset(Dataset):
 	def init_word_vocab(self, word_dict):
 		"""
 		Creating word vocabulary
-		:return: list of mapping from idx to word and dict of mapping from pos to word
+		:return: list of mapping from idx to word
 		"""
 		idx_word_mappings = sorted([token for token in SPECIAL_TOKENS])
 		word_idx_mappings = {token: idx_word_mappings.index(token) for token in idx_word_mappings}
@@ -111,8 +117,9 @@ class VQADataset(Dataset):
 
 	def _get_entry(self, item: Dict) -> Dict:
 		"""
-		:item: item from the data. In this example, {'input': Tensor, 'y': int}
+		:item: item from the data.
 		"""
+
 		labels_tensor = torch.tensor([item['labels']], requires_grad=False, dtype=torch.int64)
 		scores_tensor = torch.tensor(item['scores'], requires_grad=False, dtype=torch.float32)
 		labels = torch.sparse.FloatTensor(labels_tensor, scores_tensor, torch.Size([2410])) # 2410 - num of labels
@@ -121,7 +128,10 @@ class VQADataset(Dataset):
 		for idx, word in enumerate(item['question'].split()):  # going over the comment content
 			if idx >= MAX_QUESTION_LEN:
 				break
+			# map word to index
 			words_idx_list.append(self.word_idx_mappings.get(word, self.word_idx_mappings.get(UNKNOWN_TOKEN)))
+
+		# pad the end of the tensor
 		for i in range(len(item['question'].split()), MAX_QUESTION_LEN):
 			words_idx_list.append(self.word_idx_mappings.get(PAD_TOKEN))
 		question_tensor = torch.tensor(words_idx_list, dtype=torch.long, requires_grad=False)
@@ -132,8 +142,8 @@ class VQADataset(Dataset):
 	def _get_images(self, path):
 		try:
 			image = Image.open(path)
-			# normalize = transforms.Normalize(mean=[0.4783, 0.4493, 0.4075],
-			# 								 std=[0.1214, 0.1191, 0.1429])
+			normalize = transforms.Normalize(mean=[0.4783, 0.4493, 0.4075],
+											 std=[0.1214, 0.1191, 0.1429])
 			if self.is_val:
 				transform = transforms.Compose([
 					transforms.Resize(255),
@@ -149,9 +159,13 @@ class VQADataset(Dataset):
 					transforms.ToTensor(),
 				])
 			tensor_image = transform(image)
+
+			# if the image is greyscale change it to rgb representation
 			if tensor_image.size(0) == 1:
 				tensor_image = tensor_image.repeat(3, 1, 1)
 			return tensor_image #normalize(tensor_image)
+
+		# sometimes an image is locked by other students, so catch the exception, wait a second and repeat
 		except:
 			print("entered into the except :(")
 			time.sleep(1)

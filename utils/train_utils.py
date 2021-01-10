@@ -10,6 +10,11 @@ from omegaconf import DictConfig
 
 
 def compute_soft_accuracy(pred: Tensor, labels: Tensor) -> Tensor:
+	"""
+	:param pred: tensor of the predicting values
+	:param labels: tensor with the true labels score
+	:return: sum  of scores of the argmax preds (in all of the samples in  the batch)
+	"""
 	argmax = torch.argmax(pred, 1)
 	return labels[torch.arange(labels.size(0), out=torch.LongTensor()), argmax].sum()
 

@@ -14,11 +14,11 @@ from utils.train_utils import TrainParams
 from utils.train_logger import TrainLogger
 import sys
 
-disable_tqdm = not(sys.stdin.isatty())
+disable_tqdm = not(sys.stdin.isatty()) # use tqdm only in console
 
 def get_metrics(best_eval_score: float, eval_score: float, train_loss: float) -> Metrics:
     """
-    Example of metrics dictionary to be reported to tensorboard. Change it to your metrics
+    Example of metrics dictionary to be reported to tensorboard.
     :param best_eval_score:
     :param eval_score:
     :param train_loss:
@@ -79,7 +79,7 @@ def train(model: nn.Module, train_loader: DataLoader, eval_loader: DataLoader, t
             metrics['total_norm'] += nn.utils.clip_grad_norm_(model.parameters(), train_params.grad_clip)
             metrics['count_norm'] += 1
 
-            # NOTE! This function compute scores correctly only for one hot encoding representation of the logits
+            # Calculate accuracy
             batch_score = train_utils.compute_soft_accuracy(y_hat_probs, label)
             metrics['train_score'] += batch_score.item()
 
@@ -88,7 +88,6 @@ def train(model: nn.Module, train_loader: DataLoader, eval_loader: DataLoader, t
             # Report model to tensorboard
             if epoch == 0 and i == 0:
                 logger.report_graph(model, (image, question, question_len))
-            1==1
 
         # Learning rate scheduler step
         scheduler.step()
@@ -149,6 +148,7 @@ def evaluate(model: nn.Module, dataloader: DataLoader) -> Scores:
         # target_probs = nn.functional.softmax(label)
         loss += bce_loss(y_hat, label)
 
+        # Calculate accuracy
         score += train_utils.compute_soft_accuracy(y_hat_probs, label).item()
 
     loss /= len(dataloader.dataset)

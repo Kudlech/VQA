@@ -1,5 +1,5 @@
 """
-Classifier for example.
+the image ANN
 """
 
 
@@ -10,9 +10,8 @@ from torch.nn.utils.weight_norm import weight_norm
 
 class ImageNet(nn.Module, metaclass=ABCMeta):
 	"""
-	Classifier for example.
-	Usage example:
-	Classifier(1024, 512, 2, 0.2) - for a fully with weight normalization and dropout of 0.2. Out dimension of 0.2.
+	the net take the image representation and pass it through:
+	 conv, batch_norm, ReLU, dropout and pooling 3 times
 	"""
 	def __init__(self, in_dim: int, out_dim: int, dropout: float):
 		super(ImageNet, self).__init__()
@@ -40,10 +39,9 @@ class ImageNet(nn.Module, metaclass=ABCMeta):
 
 	def forward(self, image: Tensor) -> Tensor:
 		"""
-		Forward x through the classifier
-		:param x:
-		:return: logits
+		Forward image rep through the classifier
+		:param image:
+		:return: image_tensor
 		"""
 		image_tensor = self.conv_layer(image)
-		# return self.fc(image_tensor.view(image.size(0), -1))
 		return image_tensor
